@@ -18,9 +18,9 @@ Host:
 	<< ANS LOAD <quantos números>
 
 ### SPLIT
-Manda o cliente dividir 
-
-TODO^
+Manda o cliente dividir seu trabalho e devolver a fração desejada pelo host.
+  >> SPLIT 0.3 # Me dê 30% dos números que você tá trabalhando
+  << ANS SPLIT <pte. inicial> <pte. final>
 
 ### END
 Mostra final de cálculo para a máquina Host.
@@ -30,8 +30,6 @@ Cliente:
 Cliente:
 	>> END PROOF <Número>
 	<< ANS END OK
-
-
 
 ### ANS
 Responde algum protocolo anterior.
