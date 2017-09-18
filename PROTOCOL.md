@@ -31,5 +31,8 @@ Cliente:
 	>> END PROOF <Número>
 	<< ANS END OK
 
+### CAP
+Checa a capacidade computacional do computador no momento. Realiza um micro stress-test e o mais rápido vira o líder.
+
 ### ANS
 Responde algum protocolo anterior.
