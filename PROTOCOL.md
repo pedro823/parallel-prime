@@ -17,6 +17,18 @@ Host:
 	>> LOAD
 	<< ANS LOAD <quantos números>
 
+### CONN
+Cita todos os computadores conectados na rede.
+Cliente:
+  >> CONN
+Host:
+  << ANS CONN <Lista de IPs>
+
+Cliente:
+  >> CONN
+Outro cliente:
+  << ANS CONN HOST <IP do HOST>
+
 ### SPLIT
 Manda o cliente dividir seu trabalho e devolver a fração desejada pelo host.
   >> SPLIT 0.3 # Me dê 30% dos números que você tá trabalhando
@@ -30,6 +42,21 @@ Cliente:
 Cliente:
 	>> END PROOF <Número>
 	<< ANS END OK
+
+### TRN
+Transfere liderança para outro computador. Todos os dados são transferidos
+Host:
+  >> TRN START
+  << ANS TRN OK
+
+#### CALC
+Dentro do Transfer, fala o que já foi calculado
+
+### PING
+Executa um ping à outra máquina, pra saber se ela está viva.
+Qualquer um:
+  >> PING
+  << ANS PING <URI do líder>
 
 ### CAP
 Checa a capacidade computacional do computador no momento. Realiza um micro stress-test e o mais rápido vira o líder.
