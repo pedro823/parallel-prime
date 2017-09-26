@@ -14,7 +14,7 @@ class Connector
     @leader = nil
   end
 
-  def scan
+  def find_leader
     local = @local_ip.split(".")[0..2].join(".")
     a = []
     (0...16).each do |i| #TODO melhorar isso. bastante.
@@ -27,12 +27,17 @@ class Connector
           if m.valid?
             # Try pinging it and see the response
             m.ping
-            s = m.socket.gets.split(' ')
+            s = m.socket.gets.chomp.split(' ')
             if s[0] == "ANS" and s[1] == "PING"
               # Found a service running!
+              Debugger.debug_print(1, "FOUND SERVICE AT #{address}")
               @connections[address] = m
-              @leader = s[3]
+              @leader = s[2]
+              Debugger.debug_print(1, "LEADER IS NOW #{s[2]}")
             end
+          end
+          if !@leader.nil?
+            break
           end
         end
       end
@@ -42,10 +47,26 @@ class Connector
     end
   end
 
+  # Asks the leader for all the connections it has.
+  # MUST HAVE LEADER DEFINED.
+  def scan
+    if @leader.nil?
+      raise "Leader is nil: Always find_leader first."
+    end
+    # Is the leader connection any good?
+    lead_conn = @connections[@leader]
+    if lead_conn.nil?
+    end
+  end
+
   def self.find_local_ip
     return Socket.ip_address_list.detect do |ip|
       ip.ipv4_private?
     end.ip_address
+  end
+
+  def find_local_ip
+    return Connector.find_local_ip
   end
 
   def connections
@@ -68,7 +89,6 @@ if __FILE__ == $0
   Debugger.set_debug_priority(1)
   c = Connector.new(7550)
   puts c.find_local_ip.split('.')[0..2]
-  c.connections.each do |conn|
-    puts conn
-  end
+  c.find_leader
+  puts c.connections
 end

@@ -93,10 +93,10 @@ end
 if __FILE__ == $0
   Debugger.set_debug_priority(0)
   s = Solver.new(26898370231697, 2, Math.sqrt(26898370231697).ceil)
-  sleep(1)
+  sleep(0.1)
   s.pause
   Debugger.debug_print(3, "Waited 1 sec, current_iteration =", s.current_iteration)
-  sleep(1)
+  sleep(0.1)
   Debugger.debug_print(3, "s.end? = ", s.end?)
   Debugger.debug_print(3, "s.paused? =", s.paused?)
   Debugger.debug_print(3, "Waited 1 sec with it paused. current_iteration =", s.current_iteration)

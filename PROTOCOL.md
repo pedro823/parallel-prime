@@ -29,6 +29,9 @@ Cliente:
 Outro cliente:
   << ANS CONN HOST <IP do HOST>
 
+### CLOSE
+Pede para fechar a conexão com o servidor
+
 ### SPLIT
 Manda o cliente dividir seu trabalho e devolver a fração desejada pelo host.
   >> SPLIT 0.3 # Me dê 30% dos números que você tá trabalhando
