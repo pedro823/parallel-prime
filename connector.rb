@@ -7,6 +7,8 @@ require './messenger.rb'
 
 # Class that administrates connections
 class Connector
+  attr_reader :connections
+
   def initialize(port = 7550)
     @connections = {}
     @port = port
@@ -14,49 +16,47 @@ class Connector
     @leader = nil
   end
 
-  def find_leader
+  def scan
     local = @local_ip.split(".")[0..2].join(".")
     a = []
-    (0...16).each do |i| #TODO melhorar isso. bastante.
-      # Starts 16 new threads searching for services at the port
+    (0..255).each do |last_digit|
       a << Thread.new do |this_thread|
-        (i * 16...(i + 1) * 16).each do |last_digit|
-          address = local + "." + last_digit.to_s
-          m = Messenger.new(address, @port)
-          # Is there a valid service running?
-          if m.valid?
-            # Try pinging it and see the response
-            m.ping
-            s = m.socket.gets.chomp.split(' ')
-            if s[0] == "ANS" and s[1] == "PING"
-              # Found a service running!
-              Debugger.debug_print(1, "FOUND SERVICE AT #{address}")
-              @connections[address] = m
-              @leader = s[2]
-              Debugger.debug_print(1, "LEADER IS NOW #{s[2]}")
-            end
-          end
-          if !@leader.nil?
-            break
-          end
+        address = local + "." + last_digit.to_s
+        m = Messenger.new(address, @port)
+        if m.valid?
+          @connections[address] = m
         end
       end
     end
-    a.each do |i|
-      i.join
+    a.each do |thread|
+      thread.join
     end
+    Debugger.debug_print(2, "Connector: Ended scan")
   end
 
-  # Asks the leader for all the connections it has.
-  # MUST HAVE LEADER DEFINED.
-  def scan
-    if @leader.nil?
-      raise "Leader is nil: Always find_leader first."
+  def find_leader
+    @connections.each do |key, connection|
+      Debugger.debug_print(0, "iterating through connection #{connection}")
+      if !connection.valid?
+        # Removes invalid connection from list
+        @connections.reject! { |i| i == connection }
+      else
+        # pings any connection to know the leader
+        connection.ping
+        msg = connection.socket.gets.chomp.split(" ")
+        if msg.length <= 1
+          # Discards malformed message and asks the next person
+          Debugger.debug_print(1, "Connection #{connection.ip} sent malformed message: #{message.join(" ")}.")
+          next
+        end
+        if msg[0] == "ANS" and msg[1] == "PING"
+          # Found leader
+          @leader = msg[2]
+          return msg[2]
+        end
+      end
     end
-    # Is the leader connection any good?
-    lead_conn = @connections[@leader]
-    if lead_conn.nil?
-    end
+    raise "Could not find leader"
   end
 
   def self.find_local_ip
@@ -69,9 +69,6 @@ class Connector
     return Connector.find_local_ip
   end
 
-  def connections
-    return @connections
-  end
   # Changes host connection to new_host
   def change_host(new_host)
     @connections[:host] = new_host
@@ -79,7 +76,7 @@ class Connector
 
   def ping_all
     connections.each do |connection|
-      connection.ping()
+      connection.ping
     end
   end
 end
@@ -89,6 +86,7 @@ if __FILE__ == $0
   Debugger.set_debug_priority(1)
   c = Connector.new(7550)
   puts c.find_local_ip.split('.')[0..2]
-  c.find_leader
+  c.scan
   puts c.connections
+  puts c.find_leader
 end
