@@ -3,11 +3,13 @@
 #
 require 'thread'
 require 'socket'
+require 'timeout'
 require './messenger.rb'
 
 # Class that administrates connections
 class Connector
   attr_reader :connections
+  attr_accessor :leader
 
   def initialize(port = 7550)
     @connections = {}
@@ -19,10 +21,16 @@ class Connector
   def scan
     local = @local_ip.split(".")[0..2].join(".")
     a = []
+    mutex = Mutex.new
+    completed = 0
     (0..255).each do |last_digit|
       a << Thread.new do |this_thread|
         address = local + "." + last_digit.to_s
         m = Messenger.new(address, @port)
+        mutex.synchronize do
+          completed += 1
+          Debugger.status(4, "#{completed}/256 ports scanned... (#{completed * 100 / 256}%)")
+        end
         if m.valid?
           @connections[address] = m
         end
@@ -56,13 +64,46 @@ class Connector
         end
       end
     end
-    raise "Could not find leader"
+    return nil
+  end
+
+  # Closes some client connection.
+  # @param {string} ip  The string to close connection to.
+  def close_connection(ip)
+    connection = @connections[ip]
+    if connection.nil?
+      Debugger.debug_print(2, "Connector.close_connection: Tried to close Connection #{ip}" +
+                              "but connection does not exist!")
+      return
+    end
+    connection.close
+    @connections[ip] = nil
+  end
+
+  # Adds new connection to @connections
+  def add(ip)
+    new_messenger = Messenger.new(ip)
+    if new_messenger.valid?
+      Debugger.debug_print(1, "adding #{ip} to ip list...")
+      @connections[ip] = new_messenger
+    else
+      return false
+    end
+    return true
   end
 
   def self.find_local_ip
-    return Socket.ip_address_list.detect do |ip|
-      ip.ipv4_private?
-    end.ip_address
+    begin
+      final_ip = nil
+      Timeout::timeout(3) do
+        final_ip = Socket.ip_address_list.detect do |ip|
+          ip.ipv4_private?
+        end.ip_address
+      end
+    rescue
+      final_ip = nil
+    end
+    return final_ip
   end
 
   def find_local_ip
@@ -74,8 +115,10 @@ class Connector
     @connections[:host] = new_host
   end
 
+  # Pings every connection
   def ping_all
-    connections.each do |connection|
+    @connections.each do |index, connection|
+      Debugger.debug_print(1, "Pinging #{index}")
       connection.ping
     end
   end
@@ -83,10 +126,12 @@ end
 
 ## Unit testing
 if __FILE__ == $0
-  Debugger.set_debug_priority(1)
+  Debugger.set_debug_priority(0)
   c = Connector.new(7550)
-  puts c.find_local_ip.split('.')[0..2]
+  print c.find_local_ip.split('.')[0..2] * "." + ".*\n"
   c.scan
+  puts "Ended scan."
+  c.ping_all
   puts c.connections
   puts c.find_leader
 end

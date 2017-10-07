@@ -8,6 +8,7 @@ require './debugger.rb'
 
 # Thread that tries to solve the prime mistery
 class Solver
+  attr_accessor :lo, :hi
   @prime = 0
   @iteration = 0
   # Initializes a solver.
@@ -18,6 +19,7 @@ class Solver
     @lo = lo
     @testing = lo
     @hi = hi
+    @iteration = "Thread not started"
     self.solve
     @end = false
   end
@@ -30,7 +32,7 @@ class Solver
         end
         @iteration = i
         if @prime % i == 0
-          print "Already here\n"
+          # print "Already here\n"
           Thread.current[:proof] = i
           self.signal(i)
           break

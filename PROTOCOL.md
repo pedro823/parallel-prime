@@ -4,6 +4,11 @@ Seja "Novo cliente" um computador que acabou de entrar na rede,
 "Host" o computador selecionado pelo leilão para ser o controlador de tudo,
 e "Cliente" uma máquina que já está na rede há um tempo
 
+### HELLO
+Indica nova conexão para o outro computador
+Novo cliente:
+  >> HELLO
+  << ANS HELLO HI_THERE
 
 ### RCVE
 Recebe o número primo a ser computado, e a seção a se calcular
@@ -15,19 +20,7 @@ Host:
 Checa o load da máquina: Quantos números ela precisa computar
 Host:
 	>> LOAD
-	<< ANS LOAD <quantos números>
-
-### CONN
-Cita todos os computadores conectados na rede.
-Cliente:
-  >> CONN
-Host:
-  << ANS CONN <Lista de IPs>
-
-Cliente:
-  >> CONN
-Outro cliente:
-  << ANS CONN HOST <IP do HOST>
+	<< ANS LOAD <Quantos números>
 
 ### CLOSE
 Pede para fechar a conexão com o servidor

@@ -14,6 +14,7 @@ class Messenger
   attr_reader :ip
 
   @@commands = {
+    :hello    => "HELLO",
     :receive  => "RCVE",
     :load     => "LOAD",
     :split    => "SPLIT",
@@ -65,6 +66,7 @@ class Messenger
 
   def send(command, message)
     final_message = command + ' ' + message
+    Debugger.debug_print(0, "Final message: #{final_message}")
     @socket.puts(final_message)
   end
 
@@ -98,16 +100,6 @@ class ComplexMessenger < Messenger
   # User is able to read and write to lambda_set
   attr_accessor :lambda_set
 
-  # @@commands = {
-  #   :receive  => "RCVE",
-  #   :load     => "LOAD",
-  #   :split    => "SPLIT",
-  #   :end      => "END",
-  #   :ping     => "PING",
-  #   :capacity => "CAP",
-  #   :transfer => "TRN",
-  #   :answer   => "ANS"
-  # }
   # Creates a new SimpleMessenger
   # @param ip {String}       The IP of the connection
   # @param lambda_set {Hash} The set of functions to be handled
@@ -147,11 +139,11 @@ class ComplexMessenger < Messenger
 end
 
 if __FILE__ == $0
-  a = Messenger.new('localhost', 7550)
-  puts a
-  if a.valid?
-    a.end('proof', '23')
-  end
+  # a = Messenger.new('localhost', 7550)
+  # puts a
+  # if a.valid?
+  #   a.end('proof', '23')
+  # end
   lambda_set = {
     "PING" => -> input {
       puts "Received PING inside lambda_set: #{input}"
@@ -161,7 +153,10 @@ if __FILE__ == $0
   puts b
   if b.valid?
     b.create_read_thread
+    b.hello
     b.ping
+    Debugger.debug_print(2, "Trying to close connection...")
+    b.close
     b.end_read_thread
   end
 end
