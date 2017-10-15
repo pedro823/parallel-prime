@@ -12,6 +12,8 @@ require 'timeout'
 require './messenger.rb'
 require './handler.rb'
 
+$HEARTBEAT_PERIOD_SECONDS = 10
+
 # Class that administrates connections
 class ConnectorCreator
   attr_reader :connections, :port
@@ -25,6 +27,7 @@ class ConnectorCreator
     @port = port
     @local_ip = self.find_local_ip
     @leader = nil
+    heartbeat
   end
 
   def scan
@@ -147,6 +150,27 @@ class ConnectorCreator
         @connections.reject! { |conn| conn == connection }
       else
         connection.send(command, message)
+      end
+    end
+  end
+
+  def heartbeat
+    Thread.new do
+      sleep($HEARTBEAT_PERIOD_SECONDS)
+      Debugger.debug_print(3, "Heartbeating cocnnections...")
+      @connections.each do |ip, connection|
+        if connection.valid?
+          connection.ping
+          ans = connection.gets.chomp
+          Debugger.debug_print(1, "Heartbeat #{ip}. Answer = #{ans}")
+          if ans.nil?
+            # No answer
+            @connections.reject! { |conn| conn == connection }
+          end
+        else
+          # Not valid connection
+          @connections.reject! { |conn| conn == connection }
+        end
       end
     end
   end

@@ -49,6 +49,7 @@ class HandlerCreator
   def hello(socket, splitted_line)
     Debugger.debug_print(1, "Handling HELLO message from #{socket.addr[3]}")
     if Connector.add(socket.addr[3])
+      Debugger.debug_print(4, "New client got into network: #{socket.addr[3]}")
       return "ANS HELLO HI_THERE"
     end
     return "ANS HELLO INVALID"
