@@ -45,14 +45,15 @@ class HandlerCreator
     else
       msg = self.unknown(socket, line)
     end
-    Debugger.debug_print(1, "Handled message from", socket.remote_address.ip_address, ":", msg)
+    Debugger.debug_print(5, "Handled message from", socket.remote_address.ip_address, ":", msg)
     return msg
   end
 
   # Responds to HELLO message
   def hello(socket, splitted_line)
-    Debugger.debug_print(1, "Handling HELLO message from #{socket.remote_address.ip_address}")
+    Debugger.debug_print(3, "Handling HELLO message from #{socket.remote_address.ip_address}")
     if Connector.add(socket.remote_address.ip_address)
+      Debugger.debug_print(4, "Connections = #{Connector.connections.keys}")
       Debugger.debug_print(4, "New client got into network: #{socket.remote_address.ip_address}")
       return "ANS HELLO HI_THERE"
     end
@@ -64,7 +65,7 @@ class HandlerCreator
     if Connector.leader != Connector.find_local_ip
       return "LDR #{Connector.leader}"
     end
-    Debugger.debug_print(1, "Handling receive from #{socket.remote_address.ip_address}")
+    Debugger.debug_print(3, "Handling receive from #{socket.remote_address.ip_address}")
     new_load = Manager.get_load
     if new_load == nil
       return "WAIT"
@@ -100,7 +101,8 @@ class HandlerCreator
     if Connector.leader != Connector.find_local_ip
       return "ANS END NOT_LEADER"
     end
-    Manager.handle_end()
+    Manager.handle_end(socket, splitted_line)
+    return "ANS END OK"
   end
 
   # Responds to LDR message

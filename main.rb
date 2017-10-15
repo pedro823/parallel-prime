@@ -39,7 +39,7 @@ def client_prime(port, prime)
   Connector.scan
   if !Connector.find_leader.nil?
     Debugger.formal_print("Warning: There is already a leader running. Prime number specified in arguments" \
-                          "will be discarded.")
+                          " will be discarded.")
     continue_no_prime
   else
     continue_prime(prime)

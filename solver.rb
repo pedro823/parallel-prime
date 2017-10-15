@@ -8,6 +8,8 @@
 
 require 'thread'
 require './debugger.rb'
+require './connector.rb'
+require './manager.rb'
 
 $TERMINATION_TICK = 5
 
@@ -38,7 +40,6 @@ class SolverCreator
     @solving = Thread.new do
       (@lo..@hi).each do |i|
         if i % 50000 == 0
-          Debugger.debug_print(0, "Solver Iteration #{i}")
           sleep(0.001)
         end
         if @stop
@@ -106,40 +107,42 @@ class SolverCreator
   def signal(sig)
     @end = true
     # Am i my own leader?
-    if Connector.leader == Connector.find_local_ip
-      Debugger.debug_print(1, "Self-signaling #{sig} to Manager")
-      Manager.handle_end_internal(@lo, sig)
-      new_lo, new_hi = Manager.get_load
-      if new_lo == nil
-        # No more workload to be done: sleeps
-        Debugger.debug_print(4, "get_load returned WAIT. The system will now only wait for others" \
-                                " to terminate their jobs")
-        Solver.pause
-        @finalized = true
-      else
-        new_load!(new_lo, new_hi)
-      end
-    else
-      leader_conn = Connector.connections[Connector.leader]
-      if sig == false
-        leader_conn.end("#{@lo} FALSE")
-        new_load = Connector.get_load
-        if new_load == nil
+    $TRANSFER_MUTEX.synchronize do
+      if Connector.leader == Connector.find_local_ip
+        Manager.handle_end_internal(@lo, sig)
+        new_lo, new_hi = Manager.get_load
+        if new_lo == nil
+          # No more workload to be done: sleeps
           Debugger.debug_print(4, "get_load returned WAIT. The system will now only wait for others" \
-                                  " to terminate their jobs")
+          " to terminate their jobs")
           Solver.pause
           @finalized = true
         else
-          new_load!(new_load[1].to_i, new_load[2].to_i)
+          new_load!(new_lo, new_hi)
         end
       else
-        leader_conn.end("#{@lo} PROOF #{sig}")
+        leader_conn = Connector.connections[Connector.leader]
+        if sig == false
+          leader_conn.end("#{@lo} FALSE")
+          new_load = Connector.get_load
+          if new_load == nil
+            Debugger.debug_print(4, "get_load returned WAIT. The system will now only wait for others" \
+            " to terminate their jobs")
+            Solver.pause
+            @finalized = true
+          else
+            new_load!(new_load[1].to_i, new_load[2].to_i)
+          end
+        else
+          leader_conn.end("#{@lo} PROOF #{sig}")
+        end
       end
     end
   end
   # Loads new numbers to calculate.
   def new_load!(new_lo, new_hi)
     Thread.new do
+      Debugger.debug_print(2, "Got new load: #{new_lo} #{new_hi}")
       self.stop
       @lo = new_lo
       @hi = new_hi

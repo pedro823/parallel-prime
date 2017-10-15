@@ -47,10 +47,10 @@ class ConnectorCreator
           if m.valid?
             @connections[address] = m
             m.hello
-            # ans = m.gets.chomp
-            # if ans.split(" ")[2] != "HI_THERE"
-            #   Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
-            # end
+            ans = m.gets.chomp
+            if ans.split(" ")[2] != "HI_THERE"
+              Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
+            end
           end
         end
       end
@@ -111,7 +111,7 @@ class ConnectorCreator
           while message.chomp.delete(" ") != 'CLOSE'
             return_msg = Handler.handle_incoming_message(client, message)
             if !return_msg.nil?
-              Debugger.debug_print("Sending #{return_msg} to #{client.remote_address.ip_address}")
+              Debugger.debug_print(3, "Sending #{return_msg} to #{client.remote_address.ip_address}")
               client.puts(return_msg)
             else
               client.puts("NIL")

@@ -14,6 +14,8 @@ require './solver.rb'
 
 $BLOCK_SIZE = 2000000
 $EXPIRE_LEADERSHIP_IN_SECONDS = 60
+$TRANSFER_MUTEX = Mutex.new
+
 
 # Class that manages a leader's connection
 class ManagerCreator
@@ -34,24 +36,26 @@ class ManagerCreator
   end
 
   def load_from_leader(socket)
-    socket.puts("ANS TRN OK")
-    Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
-    message = socket.gets.chomp
-    while message.split(" ")[0] != "FINISH"
-      Debugger.debug_print(4, "TRN -- Received #{message}")
-      message = message.split(" ")
-      block_num = message[1].to_i
-      if message[0] == "PROGRESS"
-        block_completion = "inprogress"
-      else
-        block_completion = message[0] == "TRUE" ? true : false
-      end
-      @blocks[block_num] = block_completion
+    $TRANSFER_MUTEX.synchronize do
+      socket.puts("ANS TRN OK")
+      Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
       message = socket.gets.chomp
+      while message.split(" ")[0] != "FINISH"
+        Debugger.debug_print(4, "TRN -- Received #{message}")
+        message = message.split(" ")
+        block_num = message[1].to_i
+        if message[0] == "PROGRESS"
+          block_completion = "inprogress"
+        else
+          block_completion = message[0] == "TRUE" ? true : false
+        end
+        @blocks[block_num] = block_completion
+        message = socket.gets.chomp
+      end
+      Connector.leader = Connector.find_local_ip
+      Debugger.debug_print(4, "Finished transfer of leadership.")
+      broadcast_leader(Connector.find_local_ip)
     end
-    Connector.leader = Connector.find_local_ip
-    Debugger.debug_print(4, "Finished transfer of leadership.")
-    broadcast_leader(Connector.find_local_ip)
   end
 
   def expire_leadership
@@ -78,22 +82,24 @@ class ManagerCreator
   end
 
   def transfer_to(messenger)
-    messenger.transfer
-    message = messenger.gets.chomp.split(" ")
-    if message[0] == "ANS" and message[2] == "OK"
-      @blocks.each do |block_num, block_completion|
-        if block_completion == "inprogress"
-          block_completion = "PROGRESS"
-        elsif block_completion
-          block_completion = "TRUE"
-        else
-          block_completion = "FALSE"
+    $TRANSFER_MUTEX.synchronize do
+      messenger.transfer
+      message = messenger.gets.chomp.split(" ")
+      if message[0] == "ANS" and message[2] == "OK"
+        @blocks.each do |block_num, block_completion|
+          if block_completion == "inprogress"
+            block_completion = "PROGRESS"
+          elsif block_completion
+            block_completion = "TRUE"
+          else
+            block_completion = "FALSE"
+          end
+          messenger.send("NEXT", block_num + " " + block_completion)
         end
-        messenger.send("NEXT", block_num + " " + block_completion)
+        messenger.finish
       end
-      messenger.finish
+      Connector.leader = messenger.socket.remote_address.ip_address
     end
-    Connector.leader = messenger.socket.remote_address.ip_address
   end
 
   def get_load
@@ -144,7 +150,6 @@ class ManagerCreator
     else
       calculated_lo = splitted_line[1]
       @blocks[calculated_lo] = true
-      socket.puts("ANS END OK")
     end
   end
 end
