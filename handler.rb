@@ -24,25 +24,26 @@ class HandlerCreator
     Debugger.debug_print(1, "Incoming message from", socket.addr[3], ":", line.chomp)
     line = line.chomp.split(" ")
     if line[0] == "PING"
-      return self.ping(socket, line)
+      msg = self.ping(socket, line)
     elsif line[0] == "END"
-      return self.end(socket, line)
+      msg = self.end(socket, line)
     elsif line[0] == "LOAD"
-      return self.load(socket, line)
+      msg = self.load(socket, line)
     elsif line[0] == "CLOSE"
-      return self.close(socket, line)
+      msg = self.close(socket, line)
     elsif line[0] == "HELLO"
-      return self.hello(socket, line)
+      msg = self.hello(socket, line)
     elsif line[0] == "RCVE"
-      return self.receive(socket, line)
+      msg = self.receive(socket, line)
     elsif line[0] == "TRN"
       Manager.setvars(Solver.prime, socket.addr[3])
       Manager.load_from_leader(socket)
     elsif line[0] == "SOLVE"
-      return self.solve(socket, line)
+      msg = self.solve(socket, line)
     else
-      return self.unknown(socket, line)
+      msg = self.unknown(socket, line)
     end
+    Debugger.debug_print(1, "Handled message from", socket.addr[3], ":", msg)
   end
 
   # Responds to HELLO message
@@ -88,8 +89,8 @@ class HandlerCreator
 
   # Responds to PING message
   def ping(socket, splitted_line)
-    local_ip = Connector.find_local_ip
-    return "ANS PING #{local_ip}"
+    leader = Connector.leader
+    return "ANS PING #{leader}"
   end
 
   # Responds to END message

@@ -45,6 +45,11 @@ class ConnectorCreator
         end
         if m.valid?
           @connections[address] = m
+          m.hello
+          ans = m.gets.chomp
+          if ans.split(" ")[2] != "HI_THERE"
+            Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
+          end
         end
       end
     end
@@ -104,6 +109,7 @@ class ConnectorCreator
           end
           message = client.gets
         end
+        Debugger.debug_print(1, "#{client.addr[3]} sent message CLOSE")
       end
     end
   end
@@ -118,7 +124,7 @@ class ConnectorCreator
   end
 
   def add(ip)
-    new_messenger = Messenger.new(ip)
+    new_messenger = Messenger.new(ip, @port)
     if new_messenger.valid?
       Debugger.debug_print(1, "Adding #{ip} to ip list...")
       @connections[ip] = new_messenger
