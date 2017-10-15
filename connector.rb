@@ -72,6 +72,7 @@ class ConnectorCreator
       else
         connection.ping
         msg = connection.gets.chomp.split(" ")
+        Debugger.debug_print(2, "find_leader: Message = #{msg}")
         if msg.length <= 1
           # Discards malformed message and asks the next person
           Debugger.debug_print(1, "Connection #{connection.ip} sent malformed message: #{msg.join(" ")}.")
