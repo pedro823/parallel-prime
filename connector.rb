@@ -106,10 +106,10 @@ class ConnectorCreator
   end
 
   def serve
-    @server = TCPServer.open(@port)
-    Thread.new do
+    server = TCPServer.open(@port)
+    @server = Thread.new do
       loop do
-        Thread.new(@server.accept) do |client|
+        Thread.new(server.accept) do |client|
           message = client.gets
           while message.chomp.delete(" ") != 'CLOSE'
             return_msg = Handler.handle_incoming_message(client, message)
@@ -223,7 +223,7 @@ Connector = ConnectorCreator.new
 
 if __FILE__ == $0
   Debugger.set_debug_priority(1)
-  Connector.set_vars
+  Connector.setvars
   print Connector.find_local_ip
   Connector.scan
   puts "Ended scan"

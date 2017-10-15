@@ -27,7 +27,7 @@ class ManagerCreator
   def setvars(prime_to_calculate, old_leader = nil)
     Debugger.debug_print(2, "Setting vars for Manager. Depending on prime size, may take a while")
     block = 2
-    @hi = Math.sqrt(prime_to_calculate).ceil
+    @hi = Math.sqrt(prime_to_calculate.to_i).ceil
     while block < @hi
       @blocks[block.to_s] = false
       block += $BLOCK_SIZE
@@ -88,22 +88,24 @@ class ManagerCreator
   def transfer_to(messenger)
     $TRANSFER_MUTEX.synchronize do
       Solver.pause
-      messenger.transfer
-      message = messenger.gets.chomp.split(" ")
-      if message[0] == "ANS" and message[2] == "OK"
-        @blocks.each do |block_num, block_completion|
-          if block_completion == "inprogress"
-            block_completion = "PROGRESS"
-          elsif block_completion
-            block_completion = "TRUE"
-          else
-            block_completion = "FALSE"
+      $LEADER_SOCKET_MUTEX.synchronize do
+        messenger.transfer
+        message = messenger.gets.chomp.split(" ")
+        if message[0] == "ANS" and message[2] == "OK"
+          @blocks.each do |block_num, block_completion|
+            if block_completion == "inprogress"
+              block_completion = "PROGRESS"
+            elsif block_completion
+              block_completion = "TRUE"
+            else
+              block_completion = "FALSE"
+            end
+            messenger.send("NEXT", block_num + " " + block_completion)
           end
-          messenger.send("NEXT", block_num + " " + block_completion)
+          messenger.finish
         end
-        messenger.finish
+        Connector.leader = messenger.socket.remote_address.ip_address
       end
-      Connector.leader = messenger.socket.remote_address.ip_address
       Solver.resume
     end
   end
