@@ -38,17 +38,19 @@ class ConnectorCreator
     ('.0'..'.255').each do |last_digit|
       threads << Thread.new do |this_thread|
         address = local + last_digit
-        m = Messenger.new(address, @port)
-        mutex.synchronize do
-          completed += 1
-          Debugger.status(4, "#{completed}/256 ports scanned... (#{completed * 100 / 256}%)")
-        end
-        if m.valid?
-          @connections[address] = m
-          m.hello
-          ans = m.gets.chomp
-          if ans.split(" ")[2] != "HI_THERE"
-            Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
+        if address != @local_ip
+          m = Messenger.new(address, @port)
+          mutex.synchronize do
+            completed += 1
+            Debugger.status(4, "#{completed}/256 IPs scanned... (#{completed * 100 / 256}%)")
+          end
+          if m.valid?
+            @connections[address] = m
+            m.hello
+            ans = m.gets.chomp
+            if ans.split(" ")[2] != "HI_THERE"
+              Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
+            end
           end
         end
       end
@@ -61,6 +63,9 @@ class ConnectorCreator
 
   def find_leader
     @connections.each do |key, connection|
+      if key == @local_ip
+        next
+      end
       if !connection.valid?
         Debugger.debug_print(3, "Connection to #{key} expired")
         @connections.reject! { |conn| conn == connection }
