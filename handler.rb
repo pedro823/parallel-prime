@@ -65,10 +65,8 @@ class HandlerCreator
     new_load = Manager.get_load
     if new_load == nil
       return "WAIT"
-    else
-
     end
-    return "ANS RCVE #{Solver.prime}"
+    return "ANS RCVE #{Solver.prime} #{new_load[0]} #{new_load[1]}"
   end
 
   # Responds to LOAD message

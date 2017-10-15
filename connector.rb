@@ -75,6 +75,7 @@ class ConnectorCreator
         if msg[0] == "ANS" and msg[1] == "PING"
           # Found leader
           @leader = msg[2]
+          Debugger.debug_print(3, "Found leader! leader = #{msg[2]}")
           return @leader
         end
       end
