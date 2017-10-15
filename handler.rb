@@ -21,6 +21,9 @@ class HandlerCreator
   end
   # Handles a line coming from the host
   def handle_incoming_message(socket, line)
+    socket.addr.each do |addr|
+      Debugger.debug_print(550, "ADDR = #{addr}")
+    end
     Debugger.debug_print(1, "Incoming message from", socket.addr[3], ":", line.chomp)
     line = line.chomp.split(" ")
     if line[0] == "PING"

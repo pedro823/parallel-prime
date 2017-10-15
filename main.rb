@@ -58,6 +58,7 @@ end
 
 def continue_prime(prime)
   # Guarantee: I'm the only one running
+  Connector.leader = Connector.find_local_ip
   Manager.setvars(prime)
   Debugger.debug_print(0, "Set vars to manager")
   lo, hi = Manager.get_load
