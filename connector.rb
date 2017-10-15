@@ -12,7 +12,7 @@ require 'timeout'
 require './messenger.rb'
 require './handler.rb'
 
-$HEARTBEAT_PERIOD_SECONDS = 10
+$HEARTBEAT_PERIOD_SECONDS = 30
 
 # Class that administrates connections
 class ConnectorCreator
@@ -157,7 +157,7 @@ class ConnectorCreator
   def heartbeat
     Thread.new do
       sleep($HEARTBEAT_PERIOD_SECONDS)
-      Debugger.debug_print(3, "Heartbeating cocnnections...")
+      Debugger.debug_print(3, "Heartbeating #{@connections.count} connections...")
       @connections.each do |ip, connection|
         if connection.valid?
           connection.ping

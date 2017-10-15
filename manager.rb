@@ -101,17 +101,22 @@ class ManagerCreator
     end
     new_load = @blocks.select { |num, value| value == false }.first
     if new_load.nil?
+      Debugger.debug_print(0, "get_load -- new_load = nil!")
       check_end = @blocks.select { |num, value| value == "inprogress" }.first
-      if check_end == nil
+      if check_end.nil?
+        Debugger.debug_print(0, "check_end = nil!")
         # All blocks were checked, no one found a divisor
-        Connector.broadcast("SOLVE PRIME")
+        Connector.broadcast("SOLVE", "PRIME")
         Handler.handle_solve(false)
       else
         # Might as well make him calculate too
-
+        lo = check_end[0]
+        hi = [@hi, lo + $BLOCK_SIZE].min
+        return [lo, hi]
       end
       return nil
     end
+    Debugger.debug_print(0, "Getting new load: new_load = #{new_load}")
     @blocks[new_load[0]] = "inprogress"
     lo = new_load[0].to_i
     hi = [@hi, lo + $BLOCK_SIZE].min
