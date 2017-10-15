@@ -2,7 +2,7 @@
 #                                                                                                 #
 #                       EP2 - Redes de computadores e sistemas distribuidos                       #
 #                                   Pedro Pereira, 9778794                                        #
-#                                   Rafael Gusmão,                                                #
+#                                   Rafael Gusmão, 9778561                                        #
 #                                                                                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -45,7 +45,7 @@ class HandlerCreator
     else
       msg = self.unknown(socket, line)
     end
-    Debugger.debug_print(5, "Handled message from", socket.remote_address.ip_address, ":", msg)
+    Debugger.debug_print(3, "Handled message from", socket.remote_address.ip_address, ":", msg)
     return msg
   end
 

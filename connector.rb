@@ -2,7 +2,7 @@
 #                                                                                                 #
 #                       EP2 - Redes de computadores e sistemas distribuidos                       #
 #                                   Pedro Pereira, 9778794                                        #
-#                                   Rafael Gusmão,                                                #
+#                                   Rafael Gusmão, 9778561                                        #
 #                                                                                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -13,6 +13,7 @@ require './messenger.rb'
 require './handler.rb'
 
 $HEARTBEAT_PERIOD_SECONDS = 30
+$LEADER_SOCKET_MUTEX = Mutex.new
 
 # Class that administrates connections
 class ConnectorCreator
@@ -111,11 +112,15 @@ class ConnectorCreator
           message = client.gets
           while message.chomp.delete(" ") != 'CLOSE'
             return_msg = Handler.handle_incoming_message(client, message)
-            if !return_msg.nil?
-              Debugger.debug_print(3, "Sending #{return_msg} to #{client.remote_address.ip_address}")
-              client.puts(return_msg)
-            else
-              client.puts("NIL")
+            begin
+              if !return_msg.nil?
+                Debugger.debug_print(3, "Sending #{return_msg} to #{client.remote_address.ip_address}")
+                client.puts(return_msg)
+              else
+                client.puts("NIL")
+              end
+            rescue
+              break
             end
             message = client.gets
           end
@@ -200,8 +205,11 @@ class ConnectorCreator
 
   def get_load
     leader_conn = @connections[@leader]
-    leader_conn.receive
-    msg = leader_conn.gets.chomp.split(" ")
+    msg = nil
+    $LEADER_SOCKET_MUTEX.synchronize do
+      leader_conn.receive
+      msg = leader_conn.gets.chomp.split(" ")
+    end
     if msg[0] == "WAIT"
       return nil
     else

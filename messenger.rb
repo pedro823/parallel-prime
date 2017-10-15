@@ -2,7 +2,7 @@
 #                                                                                                 #
 #                       EP2 - Redes de computadores e sistemas distribuidos                       #
 #                                   Pedro Pereira, 9778794                                        #
-#                                   Rafael Gusmão,                                                #
+#                                   Rafael Gusmão, 9778561                                        #
 #                                                                                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 

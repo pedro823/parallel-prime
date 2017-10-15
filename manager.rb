@@ -2,7 +2,7 @@
 #                                                                                                 #
 #                       EP2 - Redes de computadores e sistemas distribuidos                       #
 #                                   Pedro Pereira, 9778794                                        #
-#                                   Rafael Gusmão,                                                #
+#                                   Rafael Gusmão, 9778561                                        #
 #                                                                                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -13,7 +13,7 @@ require './connector.rb'
 require './solver.rb'
 
 $BLOCK_SIZE = 2000000
-$EXPIRE_LEADERSHIP_IN_SECONDS = 60
+$EXPIRE_LEADERSHIP_IN_SECONDS = 99999999999
 $TRANSFER_MUTEX = Mutex.new
 
 

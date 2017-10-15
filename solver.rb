@@ -2,7 +2,7 @@
 #                                                                                                 #
 #                       EP2 - Redes de computadores e sistemas distribuidos                       #
 #                                   Pedro Pereira, 9778794                                        #
-#                                   Rafael Gusmão,                                                #
+#                                   Rafael Gusmão, 9778561                                        #
 #                                                                                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -123,7 +123,11 @@ class SolverCreator
       else
         leader_conn = Connector.connections[Connector.leader]
         if sig == false
-          leader_conn.end("#{@lo} FALSE")
+          $LEADER_SOCKET_MUTEX.synchronize do
+            leader_conn.end("#{@lo} FALSE")
+            ans_end = leader_conn.gets.chomp
+            Debugger.debug_print(4, "Leader answered END with #{ans_end}")
+          end
           new_load = Connector.get_load
           if new_load == nil
             Debugger.debug_print(4, "get_load returned WAIT. The system will now only wait for others" \
