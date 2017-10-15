@@ -17,8 +17,9 @@ $LEADER_SOCKET_MUTEX = Mutex.new
 
 # Class that administrates connections
 class ConnectorCreator
-  attr_reader :connections, :port
+  attr_reader :connections, :port, :server
   attr_accessor :leader
+
 
   def initialize
     @connections = {}
@@ -105,10 +106,10 @@ class ConnectorCreator
   end
 
   def serve
-    server = TCPServer.open(@port)
+    @server = TCPServer.open(@port)
     Thread.new do
       loop do
-        Thread.new(server.accept) do |client|
+        Thread.new(@server.accept) do |client|
           message = client.gets
           while message.chomp.delete(" ") != 'CLOSE'
             return_msg = Handler.handle_incoming_message(client, message)
@@ -228,4 +229,6 @@ if __FILE__ == $0
   puts "Ended scan"
   puts Connector.connections
   puts Connector.find_leader
+  Connector.serve
+  Connector.server.join
 end
