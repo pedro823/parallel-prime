@@ -99,18 +99,22 @@ class ConnectorCreator
 
   def serve
     server = TCPServer.open(@port)
-    loop do
-      Thread.new(server.accept) do |client|
-        message = client.gets
-        while message.chomp.delete(' ') != 'CLOSE'
-          return_msg = Handler.handle_incoming_message(client, message)
-          if !return_msg.nil?
-            Debugger.debug_print("Sending #{return_msg} to #{client.addr[3]}")
-            client.puts(return_msg)
-          end
+    Thread.new do
+      loop do
+        Thread.new(server.accept) do |client|
           message = client.gets
+          while message.chomp.delete(" ") != 'CLOSE'
+            return_msg = Handler.handle_incoming_message(client, message)
+            if !return_msg.nil?
+              Debugger.debug_print("Sending #{return_msg} to #{client.remote_address.ip_address}")
+              client.puts(return_msg)
+            else
+              client.puts("NIL")
+            end
+            message = client.gets
+          end
+          Debugger.debug_print(1, "#{client.remote_address.ip_address} sent message CLOSE")
         end
-        Debugger.debug_print(1, "#{client.addr[3]} sent message CLOSE")
       end
     end
   end
@@ -151,12 +155,14 @@ class ConnectorCreator
 
   def broadcast(command, message)
     Debugger.debug_print(4, "Broadcasting message #{command} #{message} to #{@connections.keys}")
-    @connections.each do |index, connection|
-      if !connection.valid?
-        Debugger.debug_print(4, "Connection with #{index} ended.")
-        @connections.reject! { |conn| conn == connection }
-      else
-        connection.send(command, message)
+    @connections.each do |ip, connection|
+      if ip != @local_ip
+        if !connection.valid?
+          Debugger.debug_print(4, "Connection with #{ip} ended.")
+          @connections.reject! { |conn| conn == connection }
+        else
+          connection.send(command, message)
+        end
       end
     end
   end
@@ -166,6 +172,10 @@ class ConnectorCreator
       sleep($HEARTBEAT_PERIOD_SECONDS)
       Debugger.debug_print(3, "Heartbeating #{@connections.count} connections...")
       @connections.each do |ip, connection|
+        if ip == @local_ip
+          # We do not need loopback
+          @connections.reject! { |conn| conn == connection }
+        end
         if connection.valid?
           connection.ping
           ans = connection.gets.chomp

@@ -21,9 +21,6 @@ class HandlerCreator
   end
   # Handles a line coming from the host
   def handle_incoming_message(socket, line)
-    socket.addr.each do |addr|
-      Debugger.debug_print(550, "ADDR = #{addr}")
-    end
     Debugger.debug_print(1, "Incoming message from", socket.remote_address.ip_address, ":", line.chomp)
     line = line.chomp.split(" ")
     if line[0] == "PING"
@@ -43,10 +40,13 @@ class HandlerCreator
       Manager.load_from_leader(socket)
     elsif line[0] == "SOLVE"
       msg = self.solve(socket, line)
+    elsif line[0] == "LDR"
+      msg = self.leader(socket, line)
     else
       msg = self.unknown(socket, line)
     end
     Debugger.debug_print(1, "Handled message from", socket.remote_address.ip_address, ":", msg)
+    return msg
   end
 
   # Responds to HELLO message
@@ -97,10 +97,10 @@ class HandlerCreator
   # Responds to END message
   def end(socket, splitted_line)
     Debugger.debug_print(0, "Handling END message: #{splitted_line * ' '}")
-    # TODO END, por enquanto, só está servindo para
-    # testar se mandar uma mensagem de split(" ").length == 1
-    # não crasha os outros. Implementar ela direito
-    return "END"
+    if Connector.leader != Connector.find_local_ip
+      return "ANS END NOT_LEADER"
+    end
+    Manager.handle_end()
   end
 
   # Responds to LDR message
@@ -108,7 +108,6 @@ class HandlerCreator
     Connector.add(splitted_line[1])
     Connector.leader = splitted_line[1]
   end
-
 
   # Handles SOLVE message
   def solve(socket, splitted_line)

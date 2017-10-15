@@ -49,6 +49,7 @@ class ManagerCreator
       @blocks[block_num] = block_completion
       message = socket.gets.chomp
     end
+    Connector.leader = Connector.find_local_ip
     Debugger.debug_print(4, "Finished transfer of leadership.")
     broadcast_leader(Connector.find_local_ip)
   end

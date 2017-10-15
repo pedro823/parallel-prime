@@ -22,6 +22,8 @@ end
 
 def client_no_prime(port)
   Connector.setvars(port)
+  Debugger.debug_print(1, "Started serving at port #{Connector.port}")
+  Connector.serve
   Connector.scan
   if Connector.find_leader.nil?
     Debugger.formal_print("Error: No leader found, and no prime specified. The program will now quit.")
@@ -32,6 +34,8 @@ end
 
 def client_prime(port, prime)
   Connector.setvars(port)
+  Debugger.debug_print(1, "Started serving at port #{Connector.port}")
+  Connector.serve
   Connector.scan
   if !Connector.find_leader.nil?
     Debugger.formal_print("Warning: There is already a leader running. Prime number specified in arguments" \
@@ -51,7 +55,6 @@ def continue_no_prime
     msg = new_load_msg.split(" ")
     msg[2..-1].map! { |i| i = i.to_i }
     Solver.setvars(msg[2], msg[3], msg[4])
-    Connector.serve
     Solver.wait_termination
   end
 end
@@ -65,8 +68,7 @@ def continue_prime(prime)
   Debugger.debug_print(0, "Got load: #{lo}\t#{hi}")
   Solver.setvars(prime, lo, hi)
   Debugger.debug_print(0, "Set solver load")
-  Debugger.debug_print(1, "Started serving at port #{Connector.port}")
-  Connector.serve
+
 end
 
 def close_all_connections
