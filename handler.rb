@@ -36,10 +36,8 @@ class HandlerCreator
     elsif line[0] == "RCVE"
       msg = self.receive(socket, line)
     elsif line[0] == "TRN"
-      Solver.pause
       Manager.setvars(Solver.prime, socket.remote_address.ip_address)
       Manager.load_from_leader(socket)
-      Solver.resume
     elsif line[0] == "SOLVE"
       msg = self.solve(socket, line)
     elsif line[0] == "LDR"

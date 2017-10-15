@@ -25,7 +25,7 @@ class ManagerCreator
   end
 
   def setvars(prime_to_calculate, old_leader = nil)
-    Debugger.debug_print(0, "Setting vars for Manager. Depending on prime size, may take a while")
+    Debugger.debug_print(2, "Setting vars for Manager. Depending on prime size, may take a while")
     block = 2
     @hi = Math.sqrt(prime_to_calculate).ceil
     while block < @hi
@@ -36,8 +36,10 @@ class ManagerCreator
   end
 
   def load_from_leader(socket)
-    Solver.pause
     $TRANSFER_MUTEX.synchronize do
+      Debugger.debug_print(4, "I was chosen to be the next leader. Receiving data from \
+                              #{socket.remote_address.ip_address}")
+      Solver.pause
       socket.puts("ANS TRN OK")
       Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
       message = socket.gets.chomp
@@ -56,8 +58,8 @@ class ManagerCreator
       Connector.leader = Connector.find_local_ip
       Debugger.debug_print(4, "Finished transfer of leadership.")
       broadcast_leader(Connector.find_local_ip)
+      Solver.resume
     end
-    Solver.resume
   end
 
   def expire_leadership
@@ -84,8 +86,8 @@ class ManagerCreator
   end
 
   def transfer_to(messenger)
-    Solver.pause
     $TRANSFER_MUTEX.synchronize do
+      Solver.pause
       messenger.transfer
       message = messenger.gets.chomp.split(" ")
       if message[0] == "ANS" and message[2] == "OK"
@@ -102,8 +104,8 @@ class ManagerCreator
         messenger.finish
       end
       Connector.leader = messenger.socket.remote_address.ip_address
+      Solver.resume
     end
-    Solver.resume
   end
 
   def get_load
