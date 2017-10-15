@@ -127,7 +127,7 @@ class SolverCreator
           Solver.pause
           @finalized = true
         else
-          new_load!(new_load[3].to_i, new_load[4].to_i)
+          new_load!(new_load[1].to_i, new_load[2].to_i)
         end
       else
         leader_conn.end("#{@lo} PROOF #{sig}")

@@ -49,7 +49,7 @@ def continue_no_prime
     msg = new_load_msg.split(" ")
     msg[2..-1].map! { |i| i = i.to_i }
     Solver.setvars(msg[2], msg[3], msg[4])
-    # Connector.serve
+    Connector.serve
     Solver.wait_termination
   end
 end
