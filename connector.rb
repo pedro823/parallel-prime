@@ -47,10 +47,10 @@ class ConnectorCreator
           if m.valid?
             @connections[address] = m
             m.hello
-            ans = m.gets.chomp
-            if ans.split(" ")[2] != "HI_THERE"
-              Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
-            end
+            # ans = m.gets.chomp
+            # if ans.split(" ")[2] != "HI_THERE"
+            #   Debugger.debug_print(4, "Sent HELLO to #{address}, but it was rude and responded with #{ans} :C")
+            # end
           end
         end
       end

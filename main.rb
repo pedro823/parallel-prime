@@ -68,7 +68,7 @@ def continue_prime(prime)
   Debugger.debug_print(0, "Got load: #{lo}\t#{hi}")
   Solver.setvars(prime, lo, hi)
   Debugger.debug_print(0, "Set solver load")
-
+  Solver.wait_termination
 end
 
 def close_all_connections

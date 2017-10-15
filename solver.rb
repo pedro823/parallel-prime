@@ -9,6 +9,8 @@
 require 'thread'
 require './debugger.rb'
 
+$TERMINATION_TICK = 5
+
 # Thread that tries to solve the prime mistery
 class SolverCreator
   attr_accessor :lo, :hi, :prime, :manager
@@ -97,6 +99,7 @@ class SolverCreator
       if @finalized
         break
       end
+      sleep($TERMINATION_TICK)
     end
   end
 

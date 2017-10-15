@@ -93,7 +93,7 @@ class ManagerCreator
       end
       messenger.finish
     end
-    Solver.manager = nil
+    Connector.leader = messenger.socket.remote_address.ip_address
   end
 
   def get_load
