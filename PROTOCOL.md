@@ -16,12 +16,6 @@ Host:
 	>> RCVE
 	<< ANS RCVE <primo> <pte. inicial> <pte. final>
 
-### LOAD
-Checa o load da máquina: Quantos números ela precisa computar
-Host:
-	>> LOAD
-	<< ANS LOAD <Quantos números>
-
 ### SOLVE
 Host indica a cliente qual a solução
 Host:
@@ -41,11 +35,6 @@ Host:
 ### CLOSE
 Pede para fechar a conexão com o servidor
 
-### SPLIT
-Manda o cliente dividir seu trabalho e devolver a fração desejada pelo host.
-  >> SPLIT 0.3 # Me dê 30% dos números que você tá trabalhando
-  << ANS SPLIT <pte. inicial> <pte. final>
-
 ### END
 Mostra final de cálculo para a máquina Host.
 Cliente:
@@ -59,7 +48,7 @@ Cliente:
 Indica para os outros computadores que o cliente é o novo lider.
 
 Novo líder:
-  >> LDR
+  >> LDR <IP do novo lider>
   << ANS LDR OK
 
 ### TRN

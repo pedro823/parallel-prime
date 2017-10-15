@@ -12,8 +12,8 @@ require './debugger.rb'
 require './connector.rb'
 require './solver.rb'
 
-$BLOCK_SIZE = 2000000
-$EXPIRE_LEADERSHIP_IN_SECONDS = 99999999999
+$BLOCK_SIZE = 20000000
+$EXPIRE_LEADERSHIP_IN_SECONDS = 40
 $TRANSFER_MUTEX = Mutex.new
 
 
@@ -36,6 +36,7 @@ class ManagerCreator
   end
 
   def load_from_leader(socket)
+    Solver.pause
     $TRANSFER_MUTEX.synchronize do
       socket.puts("ANS TRN OK")
       Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
@@ -56,6 +57,7 @@ class ManagerCreator
       Debugger.debug_print(4, "Finished transfer of leadership.")
       broadcast_leader(Connector.find_local_ip)
     end
+    Solver.resume
   end
 
   def expire_leadership
@@ -82,6 +84,7 @@ class ManagerCreator
   end
 
   def transfer_to(messenger)
+    Solver.pause
     $TRANSFER_MUTEX.synchronize do
       messenger.transfer
       message = messenger.gets.chomp.split(" ")
@@ -100,6 +103,7 @@ class ManagerCreator
       end
       Connector.leader = messenger.socket.remote_address.ip_address
     end
+    Solver.resume
   end
 
   def get_load
