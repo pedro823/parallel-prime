@@ -56,6 +56,12 @@ class ManagerCreator
   def expire_leadership
     Thread.new do
       sleep($EXPIRE_LEADERSHIP_IN_SECONDS)
+      # Removes invalid connections
+      Connector.connections.each do |ip, connection|
+        if !connection.valid?
+          @connections.reject! { |conn| conn == connection }
+        end
+      end
       # Get random connection
       if Connector.connections.count > 0
         new_leader_ip = Connector.connections.keys.sample
@@ -100,6 +106,9 @@ class ManagerCreator
         # All blocks were checked, no one found a divisor
         Connector.broadcast("SOLVE PRIME")
         Handler.handle_solve(false)
+      else
+        # Might as well make him calculate too
+
       end
       return nil
     end

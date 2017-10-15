@@ -96,6 +96,7 @@ class ConnectorCreator
         while message.chomp.delete(' ') != 'CLOSE'
           return_msg = Handler.handle_incoming_message(client, message)
           if !return_msg.nil?
+            Debugger.debug_print("Sending #{return_msg} to #{client.addr[3]}")
             client.puts(return_msg)
           end
           message = client.gets
