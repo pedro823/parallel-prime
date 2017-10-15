@@ -24,7 +24,7 @@ class HandlerCreator
     socket.addr.each do |addr|
       Debugger.debug_print(550, "ADDR = #{addr}")
     end
-    Debugger.debug_print(1, "Incoming message from", socket.addr[3], ":", line.chomp)
+    Debugger.debug_print(1, "Incoming message from", socket.remote_address.ip_address, ":", line.chomp)
     line = line.chomp.split(" ")
     if line[0] == "PING"
       msg = self.ping(socket, line)
@@ -39,21 +39,21 @@ class HandlerCreator
     elsif line[0] == "RCVE"
       msg = self.receive(socket, line)
     elsif line[0] == "TRN"
-      Manager.setvars(Solver.prime, socket.addr[3])
+      Manager.setvars(Solver.prime, socket.remote_address.ip_address)
       Manager.load_from_leader(socket)
     elsif line[0] == "SOLVE"
       msg = self.solve(socket, line)
     else
       msg = self.unknown(socket, line)
     end
-    Debugger.debug_print(1, "Handled message from", socket.addr[3], ":", msg)
+    Debugger.debug_print(1, "Handled message from", socket.remote_address.ip_address, ":", msg)
   end
 
   # Responds to HELLO message
   def hello(socket, splitted_line)
-    Debugger.debug_print(1, "Handling HELLO message from #{socket.addr[3]}")
-    if Connector.add(socket.addr[3])
-      Debugger.debug_print(4, "New client got into network: #{socket.addr[3]}")
+    Debugger.debug_print(1, "Handling HELLO message from #{socket.remote_address.ip_address}")
+    if Connector.add(socket.remote_address.ip_address)
+      Debugger.debug_print(4, "New client got into network: #{socket.remote_address.ip_address}")
       return "ANS HELLO HI_THERE"
     end
     return "ANS HELLO INVALID"
@@ -64,7 +64,7 @@ class HandlerCreator
     if Connector.leader != Connector.find_local_ip
       return "LDR #{Connector.leader}"
     end
-    Debugger.debug_print(1, "Handling receive from #{socket.addr[3]}")
+    Debugger.debug_print(1, "Handling receive from #{socket.remote_address.ip_address}")
     new_load = Manager.get_load
     if new_load == nil
       return "WAIT"
@@ -83,7 +83,7 @@ class HandlerCreator
 
   # Responds to CLOSE message
   def close(socket, splitted_line)
-    ip = socket.addr[3]
+    ip = socket.remote_address.ip_address
     socket.close
     @connector.connections[ip] = nil
   end

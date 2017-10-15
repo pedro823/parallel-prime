@@ -21,7 +21,7 @@ class HandlerCreator
   end
   # Handles a line coming from the host
   def handle_incoming_message(socket, line)
-    Debugger.debug_print(1, "Incoming message from", socket.addr[3], ":", line.chomp)
+    Debugger.debug_print(1, "Incoming message from", socket.remote_address.ip_address, ":", line.chomp)
     line = line.chomp.split(" ")
     if line[0] == "ANS"
       return self.ans(socket, line)
@@ -38,7 +38,7 @@ class HandlerCreator
     elsif line[0] == "RCVE"
       return self.receive(socket, line)
     elsif line[0] == "TRN"
-      Manager.setvars(Solver.prime, socket.addr[3])
+      Manager.setvars(Solver.prime, socket.remote_address.ip_address)
       Manager.load_from_leader(socket)
     elsif line[0] == "SOLVE"
       return self.solve(socket, line)
@@ -47,8 +47,8 @@ class HandlerCreator
 
   # Responds to HELLO message
   def hello(socket, splitted_line)
-    Debugger.debug_print(1, "Handling HELLO message from #{socket.addr[3]}")
-    if Connector.add(socket.addr[3])
+    Debugger.debug_print(1, "Handling HELLO message from #{socket.remote_address.ip_address}")
+    if Connector.add(socket.remote_address.ip_address)
       return "ANS HELLO HI_THERE"
     end
     return "ANS HELLO INVALID"
@@ -59,7 +59,7 @@ class HandlerCreator
     if Connector.leader != Connector.find_local_ip
       return "LDR #{Connector.leader}"
     end
-    Debugger.debug_print(1, "Handling receive from #{socket.addr[3]}")
+    Debugger.debug_print(1, "Handling receive from #{socket.remote_address.ip_address}")
     new_load = Manager.get_load
     if new_load == nil
       return "WAIT"
@@ -80,7 +80,7 @@ class HandlerCreator
 
   # Responds to CLOSE message
   def close(socket, splitted_line)
-    ip = socket.addr[3]
+    ip = socket.remote_address.ip_address
     socket.close
     @connector.connections[ip] = nil
   end
