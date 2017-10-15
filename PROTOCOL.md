@@ -22,6 +22,22 @@ Host:
 	>> LOAD
 	<< ANS LOAD <Quantos números>
 
+### SOLVE
+Host indica a cliente qual a solução
+Host:
+  >> SOLVE PRIME
+  << ANS SOLVE CLOSE
+
+Host:
+  >> SOLVE <Divisor>
+  << ANS SOLVE CLOSE
+
+### WAIT
+Host indica a cliente que não há mais LOAD para pegar, apenas esperar
+Host:
+  >> WAIT
+  << ANS WAIT OK
+
 ### CLOSE
 Pede para fechar a conexão com o servidor
 
@@ -39,23 +55,34 @@ Cliente:
 	>> END PROOF <Número>
 	<< ANS END OK
 
+### LDR
+Indica para os outros computadores que o cliente é o novo lider.
+
+Novo líder:
+  >> LDR
+  << ANS LDR OK
+
 ### TRN
 Transfere liderança para outro computador. Todos os dados são transferidos
 Host:
   >> TRN START
   << ANS TRN OK
 
-#### CALC
-Dentro do Transfer, fala o que já foi calculado
+#### NEXT
+Dentro do transfer, avisa o próximo dado e se foi calculado ou não
+Host:
+  >> NEXT 10000000 TRUE
+
+#### FINISH
+Dentro do transfer, avisa o fim dos dados
+Host:
+  >> FINISH
 
 ### PING
 Executa um ping à outra máquina, pra saber se ela está viva.
 Qualquer um:
   >> PING
   << ANS PING <URI do líder>
-
-### CAP
-Checa a capacidade computacional do computador no momento. Realiza um micro stress-test e o mais rápido vira o líder.
 
 ### ANS
 Responde algum protocolo anterior.
