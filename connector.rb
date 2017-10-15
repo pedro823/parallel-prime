@@ -139,6 +139,7 @@ class ConnectorCreator
   end
 
   def broadcast(command, message)
+    Debugger.debug_print(4, "Broadcasting message #{command} #{message} to #{@connections.keys}")
     @connections.each do |index, connection|
       if !connection.valid?
         Debugger.debug_print(4, "Connection with #{index} ended.")

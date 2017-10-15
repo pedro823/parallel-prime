@@ -49,10 +49,10 @@ Manda o cliente dividir seu trabalho e devolver a fração desejada pelo host.
 ### END
 Mostra final de cálculo para a máquina Host.
 Cliente:
-	>> END FALSE
+	>> END <Parte do calculo> FALSE
 	<< ANS END OK
 Cliente:
-	>> END PROOF <Número>
+	>> END <Parte do calculo> PROOF <Número>
 	<< ANS END OK
 
 ### LDR

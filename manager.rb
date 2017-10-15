@@ -13,10 +13,10 @@ require './connector.rb'
 require './solver.rb'
 
 $BLOCK_SIZE = 2000000
+$EXPIRE_LEADERSHIP_IN_SECONDS = 60
 
 # Class that manages a leader's connection
 class ManagerCreator
-  attr_accessor :connector
 
   def initialize
     @blocks = {}
@@ -30,12 +30,14 @@ class ManagerCreator
       @blocks[block.to_s] = false
       block += $BLOCK_SIZE
     end
+    expire_leadership
   end
 
   def load_from_leader(socket)
     socket.puts("ANS TRN OK")
     Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
-    while message = socket.gets.chomp and message != "FINISH"
+    message = socket.gets.chomp
+    while message.split(" ")[0] != "FINISH"
       Debugger.debug_print(4, "TRN -- Received #{message}")
       message = message.split(" ")
       block_num = message[1].to_i
@@ -45,13 +47,27 @@ class ManagerCreator
         block_completion = message[0] == "TRUE" ? true : false
       end
       @blocks[block_num] = block_completion
+      message = socket.gets.chomp
     end
     Debugger.debug_print(4, "Finished transfer of leadership.")
     broadcast_leader(Connector.find_local_ip)
   end
 
+  def expire_leadership
+    Thread.new do
+      sleep($EXPIRE_LEADERSHIP_IN_SECONDS)
+      # Get random connection
+      if Connector.connections.count > 0
+        new_leader_ip = Connector.connections.keys.sample
+        Debugger.debug_print(4, "Leadership expired, new leader will be #{new_leader_ip}!")
+        new_leader = Connector.connections[new_leader_ip]
+        transfer_to(new_leader)
+      end
+    end
+  end
+
   def broadcast_leader(ip)
-    @connector.broadcast("LDR", ip)
+    Connector.broadcast("LDR", ip)
   end
 
   def transfer_to(messenger)
@@ -81,6 +97,8 @@ class ManagerCreator
     if new_load.nil?
       check_end = @blocks.select { |num, value| value == "inprogress" }.first
       if check_end == nil
+        # All blocks were checked, no one found a divisor
+        Connector.broadcast("SOLVE PRIME")
         Handler.handle_solve(false)
       end
       return nil
@@ -104,12 +122,13 @@ class ManagerCreator
   end
 
   def handle_end(socket, splitted_line)
-    if splitted_line[1] == "PROOF"
-      divisor = splitted_line[2]
+    if splitted_line[2] == "PROOF"
+      divisor = splitted_line[3]
       Connector.broadcast("SOLVE", divisor)
       Handler.handle_solve(divisor)
     else
-
+      calculated_lo = splitted_line[1]
+      @blocks[calculated_lo] = true
       socket.puts("ANS END OK")
     end
   end
@@ -118,14 +137,13 @@ end
 Manager = ManagerCreator.new
 
 if __FILE__ == $0
-  prime_to_calculate = 2 ** 64 - 1
+  prime_to_calculate = 2**61 - 1
   Manager.setvars(prime_to_calculate)
   Solver.manager = Manager
   Connector.setvars
   Connector.scan
   Connector.find_leader
   Debugger.debug_print(4, "Connector.leader = #{Connector.leader}")
-  Manager.connector = Connector
   puts "Manager created."
   (0..30).each do
     a = Manager.get_load

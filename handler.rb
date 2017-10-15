@@ -23,9 +23,7 @@ class HandlerCreator
   def handle_incoming_message(socket, line)
     Debugger.debug_print(1, "Incoming message from", socket.addr[3], ":", line.chomp)
     line = line.chomp.split(" ")
-    if line[0] == "ANS"
-      return self.ans(socket, line)
-    elsif line[0] == "PING"
+    if line[0] == "PING"
       return self.ping(socket, line)
     elsif line[0] == "END"
       return self.end(socket, line)
@@ -42,6 +40,8 @@ class HandlerCreator
       Manager.load_from_leader(socket)
     elsif line[0] == "SOLVE"
       return self.solve(socket, line)
+    else
+      return self.unknown(socket, line)
     end
   end
 
@@ -64,7 +64,7 @@ class HandlerCreator
     if new_load == nil
       return "WAIT"
     else
-      
+
     end
     return "ANS RCVE #{Solver.prime}"
   end
@@ -106,25 +106,6 @@ class HandlerCreator
     Connector.leader = splitted_line[1]
   end
 
-  # Responds to ANS messages
-  def ans(socket, splitted_line)
-    if splitted_line[1] == "PING"
-      Debugger.debug_print(3, splitted_line * " ")
-    elsif splitted_line[1] == "HELLO"
-      if splitted_line.length < 3
-        # Discards message
-        return
-      end
-      if splitted_line[2] != "HI_THERE"
-
-      end
-
-    elsif splitted_line[1] == "CLOSE"
-      Debugger.debug_print(3, splitted_line * " ")
-      # Fuck.
-    end
-  end
-
 
   # Handles SOLVE message
   def solve(socket, splitted_line)
@@ -133,6 +114,11 @@ class HandlerCreator
     else
       handle_solve(splitted_line[1])
     end
+  end
+
+  # Responds to unknown command
+  def unknown(socket, splitted_line)
+    "ANS UNKNOWN"
   end
 
   # LAST FUNCTION TO BE CALLED IN THE PROGRAM

@@ -29,6 +29,7 @@ def client_no_prime(port)
   end
   continue_no_prime
 end
+
 def client_prime(port, prime)
   Connector.setvars(port)
   Connector.scan
@@ -40,6 +41,7 @@ def client_prime(port, prime)
     continue_prime(prime)
   end
 end
+
 def continue_no_prime
   leader_conn = Connector.connections[Connector.leader]
   if !leader_conn.nil?
@@ -53,6 +55,7 @@ def continue_no_prime
     Solver.wait_termination
   end
 end
+
 def continue_prime(prime)
   # Guarantee: I'm the only one running
   Manager.setvars(prime)
@@ -65,6 +68,13 @@ def continue_prime(prime)
   Connector.serve
 end
 
+def close_all_connections
+  puts "\nClosing all connections..."
+  Connector.connections.each do |key, connection|
+    # Debugger.status(4, "Shutting down connection with #{key}...")
+    connection.close
+  end
+end
 
 debug_priority = 5
 has_debug_flag = false
@@ -100,6 +110,12 @@ if ARGV.count > 0
       end
     end
   end
+end
+
+# Shuts down gracefully
+Signal.trap("INT") do
+  close_all_connections
+  exit
 end
 
 Debugger.set_debug_priority(debug_priority)
