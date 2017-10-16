@@ -50,10 +50,10 @@ class ManagerCreator
           Debugger.debug_print(4, "TRN -- Received #{message}")
           message = message.split(" ")
           block_num = message[1]
-          if message[0] == "PROGRESS"
+          if message[2] == "PROGRESS"
             block_completion = "inprogress"
           else
-            block_completion = message[0] == "TRUE" ? true : false
+            block_completion = (message[2] == "TRUE" ? true : false)
           end
           @blocks[block_num] = block_completion
           message = socket.gets.chomp
