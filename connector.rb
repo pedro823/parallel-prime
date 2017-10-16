@@ -121,12 +121,12 @@ class ConnectorCreator
               else
                 client.puts("NIL")
               end
+              message = client.gets
             rescue
+              client.close
               break
             end
-            message = client.gets
           end
-          Debugger.debug_print(1, "#{client.remote_address.ip_address} sent message CLOSE")
         end
       end
     end
