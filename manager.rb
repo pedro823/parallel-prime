@@ -37,19 +37,19 @@ class ManagerCreator
 
   def load_from_leader(socket)
     $TRANSFER_MUTEX.synchronize do
-      Debugger.debug_print(3, "manager.load_from_leader locked TRANSFER_MUTEX")
+      Debugger.debug_print(0, "manager.load_from_leader locked TRANSFER_MUTEX")
       Debugger.debug_print(4, "I was chosen to be the next leader. Receiving data from \
                               #{socket.remote_address.ip_address}")
       Solver.pause
       $LEADER_SOCKET_MUTEX.synchronize do
-        Debugger.debug_print(3, "manager.load_from_leader locked LEADER_SOCKET_MUTEX")
+        Debugger.debug_print(0, "manager.load_from_leader locked LEADER_SOCKET_MUTEX")
         socket.puts("ANS TRN OK")
         Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
         message = socket.gets.chomp
         while message.split(" ")[0] != "FINISH"
           Debugger.debug_print(4, "TRN -- Received #{message}")
           message = message.split(" ")
-          block_num = message[1].to_i
+          block_num = message[1]
           if message[0] == "PROGRESS"
             block_completion = "inprogress"
           else
@@ -62,10 +62,10 @@ class ManagerCreator
         Debugger.debug_print(4, "Finished transfer of leadership.")
         broadcast_leader(Connector.find_local_ip)
       end
-      Debugger.debug_print(3, "manager.load_from_leader unlocked LEADER_SOCKET_MUTEX")
+      Debugger.debug_print(0, "manager.load_from_leader unlocked LEADER_SOCKET_MUTEX")
       Solver.resume
     end
-    Debugger.debug_print(3, "manager.load_from_leader unlocked TRANSFER_MUTEX")
+    Debugger.debug_print(0, "manager.load_from_leader unlocked TRANSFER_MUTEX")
   end
 
   def expire_leadership
@@ -93,10 +93,10 @@ class ManagerCreator
 
   def transfer_to(messenger)
     $TRANSFER_MUTEX.synchronize do
-      Debugger.debug_print(3, "manager.transfer_to locked TRANSFER MUTEX")
+      Debugger.debug_print(0, "manager.transfer_to locked TRANSFER MUTEX")
       Solver.pause
       $LEADER_SOCKET_MUTEX.synchronize do
-        Debugger.debug_print(3, "manager.transfer_to locked LEADER_SOCKET_MUTEX")
+        Debugger.debug_print(0, "manager.transfer_to locked LEADER_SOCKET_MUTEX")
         messenger.transfer
         message = messenger.gets.chomp.split(" ")
         Debugger.debug_print(3)
@@ -112,15 +112,15 @@ class ManagerCreator
           else
             block_completion = "FALSE"
           end
-          messenger.send("NEXT", block_num + " " + block_completion)
+          messenger.send("NEXT", block_num.to_s + " " + block_completion)
         end
         messenger.finish
         Connector.leader = messenger.socket.remote_address.ip_address
       end
-      Debugger.debug_print(3, "manager.transfer_to unlocked LEADER_SOCKET_MUTEX")
+      Debugger.debug_print(0, "manager.transfer_to unlocked LEADER_SOCKET_MUTEX")
       Solver.resume
     end
-    Debugger.debug_print(3, "manager.transfer_to unlocked TRANSFER_MUTEX")
+    Debugger.debug_print(0, "manager.transfer_to unlocked TRANSFER_MUTEX")
   end
 
   def get_load

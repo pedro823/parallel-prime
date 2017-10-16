@@ -124,7 +124,7 @@ class SolverCreator
       else
         leader_conn = Connector.connections[Connector.leader]
         $LEADER_SOCKET_MUTEX.synchronize do
-          Debugger.debug_print(3, "solver.signal locked LEADER_SOCKET_MUTEX")
+          Debugger.debug_print(0, "solver.signal locked LEADER_SOCKET_MUTEX")
           if sig == false
             leader_conn.end("#{@lo} FALSE")
             ans_end = leader_conn.gets.chomp
@@ -142,9 +142,9 @@ class SolverCreator
             leader_conn.end("#{@lo} PROOF #{sig}")
           end
         end
-        Debugger.debug_print(3, "solver.signal unlocked LEADER_SOCKET_MUTEX")
+        Debugger.debug_print(0, "solver.signal unlocked LEADER_SOCKET_MUTEX")
       end
-      Debugger.debug_print(3, "solver.signal unlocked TRANSFER_MUTEX")
+      Debugger.debug_print(0, "solver.signal unlocked TRANSFER_MUTEX")
     end
   end
   # Loads new numbers to calculate.
