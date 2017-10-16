@@ -12,6 +12,8 @@ Requisitos:
 Como rodar o programa:
 	$ chmod +x main.rb
 	$ ./main.rb
+Ou:
+	$ ruby main.rb
 
 Para saber quais comandos são possíveis de serem rodados:
 	$ ./main.rb --help
@@ -19,3 +21,7 @@ Para saber quais comandos são possíveis de serem rodados:
 Por favor, lembre que é preciso rodar o EP primeiro no computador que terá o
 número a ser testado como primo, para que ele possa escanear a rede inteira e
 concluir que ele está sozinho.
+
+Para alterar valores de tamanho do bloco, ou quanto demora para haver uma
+transferência de liderança, refira-se às variáveis globais
+definidas em manager.rb.

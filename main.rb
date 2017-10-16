@@ -97,7 +97,7 @@ if ARGV.count > 0
       port_flag = false
     end
     if arg == "--help"
-      Debugger.print_usage
+      Debugger.show_usage
       exit
     elsif arg == "-p"
 
