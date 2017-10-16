@@ -208,14 +208,14 @@ class ConnectorCreator
   def get_load
     leader_conn = @connections[@leader]
     msg = nil
-    $LEADER_SOCKET_MUTEX.synchronize do
-      leader_conn.receive
-      msg = leader_conn.gets.chomp.split(" ")
-    end
+    leader_conn.receive
+    msg = leader_conn.gets.chomp.split(" ")
     if msg[0] == "WAIT"
       return nil
-    else
+    elsif msg[0] == "ANS" and msg[1] == "RCVE"
       return msg[2..4]
+    else
+      Handler.handle_incoming_message(leader_conn.socket, msg * " ")
     end
   end
 end
