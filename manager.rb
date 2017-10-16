@@ -14,7 +14,7 @@ require './solver.rb'
 
 $BLOCK_SIZE = 20000000
 $EXPIRE_LEADERSHIP_IN_SECONDS = 40
-$TRANSFER_MUTEX = Mutex.new
+
 
 
 # Class that manages a leader's connection
@@ -37,10 +37,12 @@ class ManagerCreator
 
   def load_from_leader(socket)
     $TRANSFER_MUTEX.synchronize do
+      Debugger.debug_print(3, "manager.load_from_leader locked TRANSFER_MUTEX")
       Debugger.debug_print(4, "I was chosen to be the next leader. Receiving data from \
                               #{socket.remote_address.ip_address}")
       Solver.pause
       $LEADER_SOCKET_MUTEX.synchronize do
+        Debugger.debug_print(3, "manager.load_from_leader locked LEADER_SOCKET_MUTEX")
         socket.puts("ANS TRN OK")
         Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
         message = socket.gets.chomp
@@ -60,8 +62,10 @@ class ManagerCreator
         Debugger.debug_print(4, "Finished transfer of leadership.")
         broadcast_leader(Connector.find_local_ip)
       end
+      Debugger.debug_print(3, "manager.load_from_leader unlocked LEADER_SOCKET_MUTEX")
       Solver.resume
     end
+    Debugger.debug_print(3, "manager.load_from_leader unlocked TRANSFER_MUTEX")
   end
 
   def expire_leadership
@@ -89,8 +93,10 @@ class ManagerCreator
 
   def transfer_to(messenger)
     $TRANSFER_MUTEX.synchronize do
+      Debugger.debug_print(3, "manager.transfer_to locked TRANSFER MUTEX")
       Solver.pause
       $LEADER_SOCKET_MUTEX.synchronize do
+        Debugger.debug_print(3, "manager.transfer_to locked LEADER_SOCKET_MUTEX")
         messenger.transfer
         message = messenger.gets.chomp.split(" ")
         if message[0] == "ANS" and message[2] == "OK"
@@ -108,8 +114,10 @@ class ManagerCreator
         end
         Connector.leader = messenger.socket.remote_address.ip_address
       end
+      Debugger.debug_print(3, "manager.transfer_to unlocked LEADER_SOCKET_MUTEX")
       Solver.resume
     end
+    Debugger.debug_print
   end
 
   def get_load

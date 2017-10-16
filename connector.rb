@@ -14,6 +14,7 @@ require './handler.rb'
 
 $HEARTBEAT_PERIOD_SECONDS = 30
 $LEADER_SOCKET_MUTEX = Mutex.new
+$TRANSFER_MUTEX = Mutex.new
 
 # Class that administrates connections
 class ConnectorCreator
@@ -207,10 +208,10 @@ class ConnectorCreator
   def get_load
     leader_conn = @connections[@leader]
     msg = nil
-    $LEADER_SOCKET_MUTEX.synchronize do
+    # $LEADER_SOCKET_MUTEX.synchronize do
       leader_conn.receive
       msg = leader_conn.gets.chomp.split(" ")
-    end
+    # end
     if msg[0] == "WAIT"
       return nil
     else

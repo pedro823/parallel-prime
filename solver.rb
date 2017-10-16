@@ -108,6 +108,7 @@ class SolverCreator
     @end = true
     # Am i my own leader?
     $TRANSFER_MUTEX.synchronize do
+      Debugger.debug_print(3, "solver.signal locked TRANSFER_MUTEX")
       if Connector.leader == Connector.find_local_ip
         Manager.handle_end_internal(@lo, sig)
         new_lo, new_hi = Manager.get_load
@@ -123,6 +124,7 @@ class SolverCreator
       else
         leader_conn = Connector.connections[Connector.leader]
         $LEADER_SOCKET_MUTEX.synchronize do
+          Debugger.debug_print(3, "solver.signal locked LEADER_SOCKET_MUTEX")
           if sig == false
             leader_conn.end("#{@lo} FALSE")
             ans_end = leader_conn.gets.chomp
@@ -140,7 +142,9 @@ class SolverCreator
             leader_conn.end("#{@lo} PROOF #{sig}")
           end
         end
+        Debugger.debug_print(3, "solver.signal unlocked LEADER_SOCKET_MUTEX")
       end
+      Debugger.debug_print(3, "solver.signal unlocked TRANSFER_MUTEX")
     end
   end
   # Loads new numbers to calculate.
