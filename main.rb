@@ -14,8 +14,6 @@ require './manager.rb'
 require './debugger.rb'
 require './solver.rb'
 
-Thread.abort_on_exception = true
-
 # Main script for running prime checker
 if __FILE__ != $0
   Debugger.formal_print("Error: you cannot import main.rb file. You must run it as a script.")

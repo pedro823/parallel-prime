@@ -138,7 +138,7 @@ class ManagerCreator
         Handler.handle_solve(false)
       else
         # Might as well make him calculate too
-        lo = check_end[0]
+        lo = check_end[0].to_i
         hi = [@hi, lo + $BLOCK_SIZE].min
         return [lo, hi]
       end

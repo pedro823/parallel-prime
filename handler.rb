@@ -127,6 +127,11 @@ class HandlerCreator
 
   # LAST FUNCTION TO BE CALLED IN THE PROGRAM
   def handle_solve(divisor)
+    if divisor == false
+      Connector.broadcast("SOLVE", "PRIME")
+    else
+      Connector.broadcast("SOLVE", divisor.to_s)
+    end
     Connector.close_all_connections
     Solver.stop
     if divisor == false
