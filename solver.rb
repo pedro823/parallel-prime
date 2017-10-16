@@ -122,23 +122,23 @@ class SolverCreator
         end
       else
         leader_conn = Connector.connections[Connector.leader]
-        if sig == false
-          $LEADER_SOCKET_MUTEX.synchronize do
+        $LEADER_SOCKET_MUTEX.synchronize do
+          if sig == false
             leader_conn.end("#{@lo} FALSE")
             ans_end = leader_conn.gets.chomp
             Debugger.debug_print(4, "Leader answered END with #{ans_end}")
-          end
-          new_load = Connector.get_load
-          if new_load == nil
-            Debugger.debug_print(4, "get_load returned WAIT. The system will now only wait for others" \
-            " to terminate their jobs")
-            Solver.pause
-            @finalized = true
+            new_load = Connector.get_load
+            if new_load == nil
+              Debugger.debug_print(4, "get_load returned WAIT. The system will now only wait for others" \
+              " to terminate their jobs")
+              Solver.pause
+              @finalized = true
+            else
+              new_load!(new_load[1].to_i, new_load[2].to_i)
+            end
           else
-            new_load!(new_load[1].to_i, new_load[2].to_i)
+            leader_conn.end("#{@lo} PROOF #{sig}")
           end
-        else
-          leader_conn.end("#{@lo} PROOF #{sig}")
         end
       end
     end

@@ -40,24 +40,26 @@ class ManagerCreator
       Debugger.debug_print(4, "I was chosen to be the next leader. Receiving data from \
                               #{socket.remote_address.ip_address}")
       Solver.pause
-      socket.puts("ANS TRN OK")
-      Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
-      message = socket.gets.chomp
-      while message.split(" ")[0] != "FINISH"
-        Debugger.debug_print(4, "TRN -- Received #{message}")
-        message = message.split(" ")
-        block_num = message[1].to_i
-        if message[0] == "PROGRESS"
-          block_completion = "inprogress"
-        else
-          block_completion = message[0] == "TRUE" ? true : false
-        end
-        @blocks[block_num] = block_completion
+      $LEADER_SOCKET_MUTEX.synchronize do
+        socket.puts("ANS TRN OK")
+        Debugger.debug_print(4, "Ready to transfer leadership. ANS TRN OK")
         message = socket.gets.chomp
+        while message.split(" ")[0] != "FINISH"
+          Debugger.debug_print(4, "TRN -- Received #{message}")
+          message = message.split(" ")
+          block_num = message[1].to_i
+          if message[0] == "PROGRESS"
+            block_completion = "inprogress"
+          else
+            block_completion = message[0] == "TRUE" ? true : false
+          end
+          @blocks[block_num] = block_completion
+          message = socket.gets.chomp
+        end
+        Connector.leader = Connector.find_local_ip
+        Debugger.debug_print(4, "Finished transfer of leadership.")
+        broadcast_leader(Connector.find_local_ip)
       end
-      Connector.leader = Connector.find_local_ip
-      Debugger.debug_print(4, "Finished transfer of leadership.")
-      broadcast_leader(Connector.find_local_ip)
       Solver.resume
     end
   end

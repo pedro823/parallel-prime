@@ -13,4 +13,9 @@ Como rodar o programa:
 	$ chmod +x main.rb
 	$ ./main.rb
 
+Para saber quais comandos são possíveis de serem rodados:
+	$ ./main.rb --help
 
+Por favor, lembre que é preciso rodar o EP primeiro no computador que terá o
+número a ser testado como primo, para que ele possa escanear a rede inteira e
+concluir que ele está sozinho.
