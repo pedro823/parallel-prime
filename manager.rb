@@ -13,7 +13,7 @@ require './connector.rb'
 require './solver.rb'
 
 $BLOCK_SIZE = 20000000
-$EXPIRE_LEADERSHIP_IN_SECONDS = 40
+$EXPIRE_LEADERSHIP_IN_SECONDS = 50
 
 
 

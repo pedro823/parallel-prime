@@ -37,7 +37,7 @@ class Debugger
 
   def self.show_usage
     puts "Usage: ruby #{__FILE__} [FLAGS] [PRIME]"
-    puts "FLAGS:", "\t-d[ddd]:", "\t\t Decrease debug priority."
+    puts "FLAGS:", "\t-d[dddd]:", "\t\t Decrease debug priority."
     puts "\t\t Debug priority starts at 5, every d in the flag decreases\n" \
          "\t\t priority by 1, showing more debug messages."
     puts "\t-p PORT:", "\t\t Sets port to use in the program to PORT."
