@@ -99,25 +99,28 @@ class ManagerCreator
         Debugger.debug_print(3, "manager.transfer_to locked LEADER_SOCKET_MUTEX")
         messenger.transfer
         message = messenger.gets.chomp.split(" ")
-        if message[0] == "ANS" and message[2] == "OK"
-          @blocks.each do |block_num, block_completion|
-            if block_completion == "inprogress"
-              block_completion = "PROGRESS"
-            elsif block_completion
-              block_completion = "TRUE"
-            else
-              block_completion = "FALSE"
-            end
-            messenger.send("NEXT", block_num + " " + block_completion)
-          end
-          messenger.finish
+        Debugger.debug_print(3)
+        while message[0] != "ANS" or message[2] != "OK"
+          # Discards any other messages
+          message = messenger.gets.chomp.split(" ")
         end
+        @blocks.each do |block_num, block_completion|
+          if block_completion == "inprogress"
+            block_completion = "PROGRESS"
+          elsif block_completion
+            block_completion = "TRUE"
+          else
+            block_completion = "FALSE"
+          end
+          messenger.send("NEXT", block_num + " " + block_completion)
+        end
+        messenger.finish
         Connector.leader = messenger.socket.remote_address.ip_address
       end
       Debugger.debug_print(3, "manager.transfer_to unlocked LEADER_SOCKET_MUTEX")
       Solver.resume
     end
-    Debugger.debug_print
+    Debugger.debug_print(3, "manager.transfer_to unlocked TRANSFER_MUTEX")
   end
 
   def get_load
